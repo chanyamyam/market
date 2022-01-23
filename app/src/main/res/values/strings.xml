@@ -4,4 +4,5 @@
     <string name="titleButtonName">타이틀</string>
     <string name="chatListButtonName">채팅방</string>
     <string name="homeTextViewName">중고거래</string>
+    <string name="submitButtonName">등록하기</string>
 </resources>

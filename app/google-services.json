@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "696408604209",
+    "firebase_url": "https://market-717da-default-rtdb.firebaseio.com",
+    "project_id": "market-717da",
+    "storage_bucket": "market-717da.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:696408604209:android:0d780f42ab3f6284211f10",
+        "android_client_info": {
+          "package_name": "com.clean.market"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "696408604209-p2bd3ddlk4mmvcqbicj61ae3cpg065kc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBCQnE4ZcT6y6Bu7tD9P98mUBIYN1F7QTI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "696408604209-p2bd3ddlk4mmvcqbicj61ae3cpg065kc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

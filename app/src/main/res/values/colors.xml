@@ -9,4 +9,5 @@
     <color name="white">#FFFFFFFF</color>
     <color name="gray_click">#CE504F4F</color>
     <color name="blackLine">#292B2A</color>
+    <color name="orange">#FF5722</color>
 </resources>
