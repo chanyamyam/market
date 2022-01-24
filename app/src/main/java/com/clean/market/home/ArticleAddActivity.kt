@@ -22,7 +22,7 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.ktx.storage
 
-class ArticleAddActivity: AppCompatActivity() {
+class ArticleAddActivity : AppCompatActivity() {
 
     private lateinit var binding: AddArticleActivityBinding
     private var selectedUri: Uri? = null
@@ -35,6 +35,7 @@ class ArticleAddActivity: AppCompatActivity() {
     private val articleDB: DatabaseReference by lazy {
         Firebase.database.reference.child(DB_ARTICLES)
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = AddArticleActivityBinding.inflate(layoutInflater)
@@ -57,7 +58,10 @@ class ArticleAddActivity: AppCompatActivity() {
                     showPermissionContextPopup()
                 }
                 else -> {
-                    requestPermissions(arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE),1000)
+                    requestPermissions(
+                        arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE),
+                        1000
+                    )
                 }
             }
         }
@@ -66,34 +70,44 @@ class ArticleAddActivity: AppCompatActivity() {
             val price = binding.priceTextView.text.toString()
             val sellerId = auth.currentUser?.uid.orEmpty()
 
-            val model = ArticleModel(sellerId,title,System.currentTimeMillis(),"$price 원","")
-            articleDB.push().setValue(model)
-            finish()
+            if (selectedUri != null) {
+                val photoUri = selectedUri ?: return@setOnClickListener
+                uploadPhoto(photoUri,
+                    successHandler = { url ->
+                        uploadArticle(sellerId, title, price, url)
+                    },
+                    ErrorHandler = {
+                        Toast.makeText(this, "사진 업로드에 실패했습니다.", Toast.LENGTH_SHORT).show()
+                    })
+            } else {
+                uploadArticle(sellerId, title, price, "")
+            }
         }
     }
+
     private fun startContentProvider() {
         val intent = Intent(Intent.ACTION_GET_CONTENT)
         intent.type = "image/*"
-        startActivityForResult(intent,2000)
+        startActivityForResult(intent, 2000)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if(resultCode != Activity.RESULT_OK) return
+        if (resultCode != Activity.RESULT_OK) return
 
-        when(requestCode) {
+        when (requestCode) {
             2000 -> {
                 val uri = data?.data
-                if(uri != null) {
+                if (uri != null) {
                     binding.photoImageView.setImageURI(uri)
                     selectedUri = uri
                 } else {
-                    Toast.makeText(this, "사진을 가져오지 못했습니다.",Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "사진을 가져오지 못했습니다.", Toast.LENGTH_SHORT).show()
                 }
             }
             else -> {
-                Toast.makeText(this, "사진을 가져오지 못했습니다.",Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "사진을 가져오지 못했습니다.", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -103,7 +117,7 @@ class ArticleAddActivity: AppCompatActivity() {
             .setTitle("권한이 필요합니다.")
             .setMessage("사진을 가져오기위해 필요합니다.")
             .setPositiveButton("동의") { _, _ ->
-                requestPermissions(arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE),1000)
+                requestPermissions(arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), 1000)
             }
             .create()
             .show()
@@ -117,14 +131,39 @@ class ArticleAddActivity: AppCompatActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
-        when(requestCode) {
+        when (requestCode) {
             1000 -> {
-                if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     startContentProvider()
                 } else {
-                    Toast.makeText(this, "권한을 거부하셨습니다.ㅠ",Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "권한을 거부하셨습니다.ㅠ", Toast.LENGTH_SHORT).show()
                 }
             }
         }
+    }
+
+    private fun uploadPhoto(url: Uri, successHandler: (String) -> Unit, ErrorHandler: () -> Unit) {
+        val fileName = "${System.currentTimeMillis()}.png"
+        storage.reference.child("article/photo").child(fileName)
+            .putFile(url)
+            .addOnCompleteListener {
+                if (it.isSuccessful) {
+                    storage.reference.child("article/photo").child(fileName)
+                        .downloadUrl
+                        .addOnSuccessListener {
+                            successHandler(it.toString())
+                        }.addOnFailureListener {
+                            ErrorHandler()
+                        }
+                } else {
+                    ErrorHandler()
+                }
+            }
+    }
+
+    private fun uploadArticle(sellerId: String, title: String, price: String, imageUrl: String) {
+        val model = ArticleModel(sellerId, title, System.currentTimeMillis(), "$price 원", "")
+        articleDB.push().setValue(model)
+        finish()
     }
 }
